@@ -15,10 +15,15 @@ export default function ExpenseUpload({ onUploadComplete }) {
     gstNumber: '',
     invoiceNumber: '',
     date: new Date().toISOString().split('T')[0],
-    amount: '',
-    gstAmount: '',
+    amount: 0,
+    gstAmount: 0,
     category: '',
-    description: ''
+    description: '',
+    customGstRate: 0,
+    cgst: 0,
+    sgst: 0,
+    total: 0,
+    gstRate: 0
   });
 
   const handleFileChange = (e) => {
@@ -36,26 +41,32 @@ export default function ExpenseUpload({ onUploadComplete }) {
     setLoading(true);
 
     try {
-      if (mode === 'upload' && !file) {
-        throw new Error('Please select a file');
+      // Validate form data
+      if (!formData.vendorName || !formData.amount || !formData.category) {
+        throw new Error('Please fill in all required fields');
       }
 
-      if (mode === 'form' && (!formData.vendorName || !formData.amount)) {
-        throw new Error('Please fill in required fields');
-      }
+      // Convert amount to number
+      const expenseData = {
+        ...formData,
+        amount: Number(formData.amount),
+        date: formData.date || new Date().toISOString().split('T')[0]
+      };
 
       let data;
-      
       if (mode === 'upload') {
         const formPayload = new FormData();
         formPayload.append('receipt', file);
-        Object.keys(formData).forEach(key => {
-          formPayload.append(key, formData[key]);
+        Object.entries(expenseData).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            formPayload.append(key, value);
+          }
         });
         
         data = await expenseApi.upload(formPayload);
       } else {
-        data = await expenseApi.create(formData);
+        console.log('Submitting expense data:', expenseData);
+        data = await expenseApi.create(expenseData);
       }
 
       toast.success(mode === 'upload' ? 'Receipt analyzed successfully' : 'Expense saved successfully');

@@ -150,9 +150,30 @@ export const logout = (req, res) => {
 
 export const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
-    res.json(user);
+    const user = await User.findById(req.user.id)
+      .select('-password')
+      .populate('companyId');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        name: user.name,
+        role: user.role
+      },
+      company: user.companyId ? {
+        id: user.companyId._id,
+        name: user.companyId.name,
+        industry: user.companyId.industry
+      } : null
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };

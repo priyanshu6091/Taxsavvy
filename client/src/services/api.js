@@ -3,12 +3,12 @@ import { store } from '../store';
 import { logout } from '../store/slices/authSlice';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api' // Update the baseURL
+  baseURL: 'http://localhost:5000/api'
 });
 
 // Request interceptor
 api.interceptors.request.use((config) => {
-  const token = store.getState().auth.token;
+  const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -20,6 +20,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Clear auth state and localStorage
       store.dispatch(logout());
     }
     return Promise.reject(error);
@@ -37,7 +38,11 @@ export const authApi = {
     }
   },
   register: (data) => api.post('/auth/register', data).then(res => res.data),
-  logout: () => api.post('/auth/logout').then(res => res.data)
+  logout: () => api.post('/auth/logout').then(res => res.data),
+  getProfile: async () => {
+    const response = await api.get('/auth/profile');
+    return response.data;
+  }
 };
 
 export const companyApi = {
@@ -64,7 +69,12 @@ export const expenseApi = {
     const response = await api.post('/expenses', data);
     return response.data;
   },
-  getExpenses: () => api.get('/expenses').then(res => res.data),
+  getExpenses: async (queryParams) => {
+    const response = await api.get(`/expenses?${queryParams}`);
+    return response.data;
+  },
+  deleteExpense: (id) => api.delete(`/expenses/${id}`),
+  updateExpense: (id, data) => api.put(`/expenses/${id}`, data)
 };
 
 export default api;
