@@ -1,58 +1,170 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setAuth } from '../../store/slices/authSlice';
+import { authApi } from '../../services/api';
+import toast from 'react-hot-toast';
 
 function Register() {
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    firstName: '',
+    lastName: '',
+    companyName: '',
+    taxId: '',
+    industry: '',
+    phone: ''
   });
-  const navigate = useNavigate();
+  const [errors, setErrors] = useState({});
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.email?.includes('@')) {
+      newErrors.email = 'Valid email is required';
+    }
+    if (!formData.password || formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    if (!formData.taxId) {
+      newErrors.taxId = 'Tax ID is required';
+    }
+    if (!formData.companyName) {
+      newErrors.companyName = 'Company name is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Implement registration logic
-    navigate('/login');
+    if (!validateForm()) {
+      toast.error('Please fix the errors in the form');
+      return;
+    }
+
+    try {
+      const { data } = await authApi.register(formData);
+      dispatch(setAuth(data));
+      toast.success('Registration successful!');
+      navigate('/');
+    } catch (error) {
+      const message = error.response?.data?.message || 'Registration failed';
+      toast.error(message);
+      if (error.response?.data?.error) {
+        console.error('Detailed error:', error.response.data.error);
+      }
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            {Object.entries(formData).map(([key, value], index) => (
-              <div key={key}>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Register your company
+        </h2>
+      </div>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Personal Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Personal Information</h3>
+              <div className="grid grid-cols-2 gap-4">
                 <input
-                  type={key.includes('password') ? 'password' : 'text'}
+                  name="firstName"
+                  type="text"
+                  placeholder="First Name"
                   required
-                  value={value}
-                  onChange={(e) => setFormData(prev => ({ ...prev, [key]: e.target.value }))}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                  placeholder={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
+                  className="input-field"
+                  onChange={handleChange}
+                />
+                <input
+                  name="lastName"
+                  type="text"
+                  placeholder="Last Name"
+                  required
+                  className="input-field"
+                  onChange={handleChange}
                 />
               </div>
-            ))}
-          </div>
-          <div>
+              <input
+                name="email"
+                type="email"
+                placeholder="Email"
+                required
+                className="input-field"
+                onChange={handleChange}
+              />
+              <input
+                name="password"
+                type="password"
+                placeholder="Password"
+                required
+                className="input-field"
+                onChange={handleChange}
+              />
+            </div>
+
+            {/* Company Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Company Information</h3>
+              <input
+                name="companyName"
+                type="text"
+                placeholder="Company Name"
+                required
+                className="input-field"
+                onChange={handleChange}
+              />
+              <input
+                name="taxId"
+                type="text"
+                placeholder="Tax ID"
+                required
+                className="input-field"
+                onChange={handleChange}
+              />
+              <select
+                name="industry"
+                required
+                className="input-field"
+                onChange={handleChange}
+              >
+                <option value="">Select Industry</option>
+                <option value="technology">Technology</option>
+                <option value="retail">Retail</option>
+                <option value="manufacturing">Manufacturing</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="finance">Finance</option>
+              </select>
+              <input
+                name="phone"
+                type="tel"
+                placeholder="Phone Number"
+                className="input-field"
+                onChange={handleChange}
+              />
+            </div>
+
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90"
             >
               Register
             </button>
-          </div>
-          <div className="text-sm text-center">
-            <Link to="/login" className="font-medium text-primary hover:text-primary/90">
-              Already have an account? Sign in
-            </Link>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
