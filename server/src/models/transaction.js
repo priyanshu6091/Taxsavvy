@@ -26,9 +26,21 @@ const transactionSchema = new mongoose.Schema({
   companyName: String,
   category: {
     type: String,
-    enum: ['Transportation', 'Business Expense', 'Personal', 'Education', 
-           'Healthcare', 'Uncategorized'],
-    default: 'Uncategorized'
+    enum: [
+      'Travel and Conveyance',
+      'Office Supplies',
+      'Professional Services',
+      'Rent and Utilities',
+      'Repairs and Maintenance',
+      'IT and Software',
+      'Marketing',
+      'Employee Benefits',
+      'Bank Charges',
+      'GST Payments',
+      'TDS Payments',
+      'Other'
+    ],
+    default: 'Other'
   },
   isDeductible: {
     type: Boolean,
@@ -41,6 +53,34 @@ const transactionSchema = new mongoose.Schema({
   metadata: {
     type: Map,
     of: String
+  },
+  // Add Indian-specific fields
+  gstNumber: {
+    type: String,
+    trim: true
+  },
+  gstCategory: {
+    type: String,
+    enum: ['CGST', 'SGST', 'IGST', 'None'],
+    default: 'None'
+  },
+  gstAmount: {
+    type: Number,
+    default: 0
+  },
+  subCategory: String,
+  isITCEligible: {
+    type: Boolean,
+    default: false
+  },
+  section: {
+    type: String,
+    enum: [
+      'Section 16', // Regular ITC
+      'Section 17(5)', // Blocked Credits
+      'Not Applicable'
+    ],
+    default: 'Not Applicable'
   }
 }, {
   timestamps: true

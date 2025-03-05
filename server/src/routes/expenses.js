@@ -1,47 +1,21 @@
 import express from 'express';
+import multer from 'multer';
 import { protect } from '../middleware/auth.js';
-import { createExpense, getExpenses, updateExpense, deleteExpense } from '../controllers/expenses.js';
+import { createExpense, getExpenses, uploadExpense } from '../controllers/expense.js';
 
 const router = express.Router();
 
-// Get all expenses
-router.get('/', protect, async (req, res) => {
-  try {
-    const expenses = await getExpenses(req.user.id);
-    res.json(expenses);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch expenses', error: error.message });
+const upload = multer({
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
   }
 });
 
-// Create new expense
-router.post('/', protect, async (req, res) => {
-  try {
-    const expense = await createExpense(req.user.id, req.body);
-    res.status(201).json(expense);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to create expense', error: error.message });
-  }
-});
+// For manual entry
+router.post('/', createExpense);
+router.get('/', getExpenses);
 
-// Update expense
-router.put('/:id', protect, async (req, res) => {
-  try {
-    const expense = await updateExpense(req.params.id, req.body);
-    res.json(expense);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to update expense', error: error.message });
-  }
-});
-
-// Delete expense
-router.delete('/:id', protect, async (req, res) => {
-  try {
-    await deleteExpense(req.params.id);
-    res.json({ message: 'Expense deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to delete expense', error: error.message });
-  }
-});
+// For file upload
+router.post('/upload', upload.single('receipt'), uploadExpense);
 
 export default router;
