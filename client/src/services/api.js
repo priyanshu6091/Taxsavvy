@@ -3,7 +3,7 @@ import { store } from '../store';
 import { logout } from '../store/slices/authSlice';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api'
+  baseURL: 'http://localhost:5000/api' // Update the baseURL
 });
 
 // Request interceptor
@@ -52,8 +52,19 @@ export const erpApi = {
 };
 
 export const expenseApi = {
+  upload: async (formData) => {
+    const response = await api.post('/expenses/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    });
+    return response.data;
+  },
+  create: async (data) => {
+    const response = await api.post('/expenses', data);
+    return response.data;
+  },
   getExpenses: () => api.get('/expenses').then(res => res.data),
-  createExpense: (data) => api.post('/expenses', data).then(res => res.data)
 };
 
 export default api;
