@@ -1,6 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store';
+import { Toaster } from 'react-hot-toast';
 
 // Layouts
 import DashboardLayout from './layouts/DashboardLayout';
@@ -14,6 +15,7 @@ import Documents from './pages/Documents';
 import TaxAssistant from './pages/TaxAssistant';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import ExpenseDashboard from './pages/ExpenseDashboard';
 
 // Components
 import PrivateRoute from './components/auth/PrivateRoute';
@@ -21,7 +23,8 @@ import PrivateRoute from './components/auth/PrivateRoute';
 function App() {
   return (
     <Provider store={store}>
-      <Router>
+      <BrowserRouter>
+        <Toaster position="top-right" />
         <Routes>
           {/* Auth routes */}
           <Route path="/login" element={<Login />} />
@@ -36,10 +39,11 @@ function App() {
               <Route path="/planning" element={<Planning />} />
               <Route path="/documents" element={<Documents />} />
               <Route path="/assistant" element={<TaxAssistant />} />
+              <Route index element={<ExpenseDashboard />} />
             </Route>
           </Route>
         </Routes>
-      </Router>
+      </BrowserRouter>
     </Provider>
   );
 }

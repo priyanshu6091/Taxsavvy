@@ -6,14 +6,13 @@ import {
   deleteAlert,
   getUpdates 
 } from '../controllers/regulatory.js';
-import auth from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.get('/alerts', auth, getAlerts);
-router.post('/alerts', auth, createAlert);
-router.put('/alerts/:id', auth, updateAlert);
-router.delete('/alerts/:id', auth, deleteAlert);
-router.get('/updates', auth, getUpdates);
+router.get('/alerts', getAlerts);
+router.post('/alerts', createAlert);
+router.put('/alerts/:id', updateAlert);
+router.delete('/alerts/:id', deleteAlert);
+router.get('/updates', getUpdates);
 
 export default router;
