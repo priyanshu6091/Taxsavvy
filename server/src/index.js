@@ -12,8 +12,7 @@ import financialRoutes from './routes/financial.js';
 import taxRoutes from './routes/tax.js';
 import expenseRoutes from './routes/expenses.js';
 import regulatoryRoutes from './routes/regulatory.js';
-import erpRoutes from './routes/erp.js';
-
+import taxAssistantRoutes from './routes/taxAssistant.js';
 dotenv.config();
 
 const app = express();
@@ -38,8 +37,7 @@ app.use('/api/financial', financialRoutes);
 app.use('/api/tax', taxRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/regulatory', regulatoryRoutes);
-app.use('/api/erp', erpRoutes);
-
+app.use('/api/tax-assistant', taxAssistantRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

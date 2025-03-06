@@ -1,5 +1,4 @@
 import { TaxCalculation } from '../models/Tax.js';
-
 export const calculateTax = async (userId, data) => {
   const { income, expenses, deductions, filingStatus } = data;
   
@@ -35,6 +34,7 @@ export const getTaxHistory = async (userId) => {
     .sort({ calculatedAt: -1 })
     .limit(10);
 };
+
 
 export const saveTaxCalculation = async (userId, calculationData) => {
   const calculation = new TaxCalculation({

@@ -15,6 +15,15 @@ export default function Expenses() {
     endDate: '',
     isDeductible: ''
   });
+  const [gstCredits, setGstCredits] = useState([]);
+
+  useEffect(() => {
+    const fetchCredits = async () => {
+      const response = await expenseApi.getGstCredits();
+      setGstCredits(response.data);
+    };
+    fetchCredits();
+  }, []);
 
   useEffect(() => {
     loadExpenses();
@@ -107,7 +116,7 @@ export default function Expenses() {
           </button>
         </div>
       </div>
-
+      
       {/* Filters */}
       <div className="flex gap-4 bg-white p-4 rounded-lg">
         {/* ...existing filter UI... */}
@@ -157,8 +166,7 @@ export default function Expenses() {
                     ${expense.isDeductible ? 
                       'bg-green-100 text-green-800' : 
                       'bg-gray-100 text-gray-800'
-                    }`}
-                  >
+                    }`}>
                     {expense.isDeductible ? 
                       `Deductible (${expense.taxSection})` : 
                       'Non-deductible'}

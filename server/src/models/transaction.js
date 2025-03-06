@@ -85,7 +85,11 @@ const transactionSchema = new mongoose.Schema({
   customGstRate: {
     type: Number,
     default: null
-  }
+  },
+  gstCreditclaimed: {
+    type: Boolean,
+    default: false
+  },
 }, {
   timestamps: true
 });

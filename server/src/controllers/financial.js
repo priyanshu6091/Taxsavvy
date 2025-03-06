@@ -1,5 +1,4 @@
 import { Transaction, Projection } from '../models/Financial.js';
-
 export const getFinancialSummary = async (userId) => {
   try {
     const transactions = await Transaction.find({ userId });

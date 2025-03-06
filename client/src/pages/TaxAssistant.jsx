@@ -1,160 +1,139 @@
 import { useState } from 'react';
-import { Send } from 'lucide-react';
+import { Calculator, TrendingUp, PieChart, Zap } from 'lucide-react';
+import { taxAssistantApi } from '../services/taxAssistantApi';
+import toast from 'react-hot-toast';
 
-const commonQuestions = [
-  {
-    title: 'What deductions can I claim?',
-    description: 'Learn about available tax deductions',
-  },
-  {
-    title: 'How do I file an extension?',
-    description: 'Get help with tax filing extensions',
-  },
-  {
-    title: 'Understanding tax credits',
-    description: 'Explore available tax credits',
-  },
-];
+export default function TaxAssistant() {
+  const [analysis, setAnalysis] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('calculator');
 
-const getAIResponse = (message) => {
-  const responses = {
-    'deductions': 'Common tax deductions include: \n- Business expenses\n- Pension contributions\n- Charitable donations\n- Home office expenses',
-    'credits': 'Available tax credits may include: \n- R&D tax credits\n- Employment allowance\n- Marriage allowance',
-    'extension': 'To file a tax extension: \n1. Submit form SA371\n2. Request must be made before the deadline\n3. Provide valid reason for extension',
-    'default': "I can help you with tax-related questions. You can ask about deductions, credits, filing requirements, or any other tax matters."
-  };
+  const [formData, setFormData] = useState({
+    income: '',
+    expenses: [],
+    investments: {},
+    deductions: {}
+  });
 
-  const lowerMessage = message.toLowerCase();
-  if (lowerMessage.includes('deduction')) return responses.deductions;
-  if (lowerMessage.includes('credit')) return responses.credits;
-  if (lowerMessage.includes('extension')) return responses.extension;
-  return responses.default;
-};
-
-function TaxAssistant() {
-  const [message, setMessage] = useState('');
-  const [chatHistory, setChatHistory] = useState([]);
-  const [isTyping, setIsTyping] = useState(false);
-
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (!message.trim()) return;
-
-    const userMessage = message.trim();
-    setMessage('');
-    
-    // Add user message
-    setChatHistory(prev => [...prev, { type: 'user', content: userMessage }]);
-    
-    // Show typing indicator
-    setIsTyping(true);
-
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse = getAIResponse(userMessage);
-      setChatHistory(prev => [...prev, { type: 'assistant', content: aiResponse }]);
-      setIsTyping(false);
-    }, 1000);
-  };
-
-  const handleQuestionClick = (question) => {
-    handleSendMessage({ preventDefault: () => {} });
-    setMessage(question.title);
+  const handleAnalyze = async () => {
+    try {
+      setLoading(true);
+      const result = await taxAssistantApi.analyze(formData);
+      setAnalysis(result);
+    } catch (error) {
+      toast.error('Analysis failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="h-[calc(100vh-12rem)] flex">
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 p-6 bg-white rounded-lg shadow-sm overflow-y-auto">
-          {chatHistory.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-center">
-              <div>
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Send className="w-8 h-8 text-primary" />
-                </div>
-                <h2 className="text-xl font-medium text-gray-900">Tax Assistant</h2>
-                <p className="mt-2 text-sm text-gray-500">
-                  Get instant answers to your tax-related questions
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {chatHistory.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                      msg.type === 'user'
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-line">{msg.content}</p>
-                  </div>
-                </div>
-              ))}
-              {isTyping && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-100 rounded-lg px-4 py-2">
-                    <div className="flex space-x-2">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="p-4 border-t bg-white">
-          <form onSubmit={handleSendMessage} className="flex space-x-4">
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="How can I help you with your taxes today?"
-              className="flex-1 rounded-lg border-gray-300 focus:border-primary focus:ring-primary"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-            >
-              <Send className="w-5 h-5" />
-            </button>
-          </form>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">AI Tax Assistant</h1>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab('calculator')}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+              activeTab === 'calculator' ? 'bg-primary text-white' : 'bg-white'
+            }`}
+          >
+            <Calculator className="w-4 h-4" />
+            Tax Calculator
+          </button>
+          <button
+            onClick={() => setActiveTab('planning')}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${
+              activeTab === 'planning' ? 'bg-primary text-white' : 'bg-white'
+            }`}
+          >
+            <TrendingUp className="w-4 h-4" />
+            Tax Planning
+          </button>
         </div>
       </div>
 
-      <div className="w-80 ml-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Common Questions
-          </h2>
+      <div className="grid grid-cols-2 gap-6">
+        {/* Input Form */}
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h2 className="text-lg font-medium mb-4">Financial Information</h2>
           <div className="space-y-4">
-            {commonQuestions.map((question, index) => (
-              <button
-                key={index}
-                onClick={() => handleQuestionClick(question)}
-                className="w-full text-left p-4 rounded-lg border hover:bg-gray-50"
-              >
-                <h3 className="text-sm font-medium text-gray-900">
-                  {question.title}
-                </h3>
-                <p className="mt-1 text-xs text-gray-500">
-                  {question.description}
-                </p>
-              </button>
-            ))}
+            <div>
+              <label className="block text-sm font-medium mb-1">Annual Income</label>
+              <input
+                type="number"
+                value={formData.income}
+                onChange={(e) => setFormData(prev => ({ ...prev, income: e.target.value }))}
+                className="w-full rounded-lg border-gray-300"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Expenses</label>
+              <input
+                type="text"
+                value={formData.expenses.join(', ')}
+                onChange={(e) => setFormData(prev => ({ ...prev, expenses: e.target.value.split(', ') }))}
+                className="w-full rounded-lg border-gray-300"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Investments</label>
+              <input
+                type="text"
+                value={Object.keys(formData.investments).join(', ')}
+                onChange={(e) => setFormData(prev => ({ ...prev, investments: e.target.value.split(', ').reduce((acc, key) => ({ ...acc, [key]: '' }), {}) }))}
+                className="w-full rounded-lg border-gray-300"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Deductions</label>
+              <input
+                type="text"
+                value={Object.keys(formData.deductions).join(', ')}
+                onChange={(e) => setFormData(prev => ({ ...prev, deductions: e.target.value.split(', ').reduce((acc, key) => ({ ...acc, [key]: '' }), {}) }))}
+                className="w-full rounded-lg border-gray-300"
+              />
+            </div>
           </div>
+          <button
+            onClick={handleAnalyze}
+            disabled={loading}
+            className="mt-4 w-full bg-primary text-white py-2 rounded-lg"
+          >
+            {loading ? 'Analyzing...' : 'Analyze Tax Situation'}
+          </button>
         </div>
+
+        {/* Results & Recommendations */}
+        {analysis && (
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <h2 className="text-lg font-medium mb-4">Tax Analysis</h2>
+            <div className="space-y-4">
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <div className="font-medium">Current Tax Liability</div>
+                <div className="text-2xl font-bold">
+                  ₹{analysis.currentTax ? analysis.currentTax.toLocaleString() : 'N/A'}
+                </div>
+              </div>
+              <div>
+                <h3 className="font-medium mb-2">Recommendations</h3>
+                <ul className="space-y-2">
+                  {analysis.recommendations.map((rec, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <Zap className="w-4 h-4 text-primary mt-1" />
+                      <div>
+                        <div className="font-medium">{rec.title}</div>
+                        <div className="text-sm text-gray-600">{rec.description}</div>
+                        <div className="text-xs text-gray-500">{rec.impact}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
-export default TaxAssistant;

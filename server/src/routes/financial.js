@@ -1,9 +1,10 @@
 import express from 'express';
 import { protect } from '../middleware/auth.js';
+import { recommendSalaryStructure } from '../services/aiFinancialService.js';
 
 const router = express.Router();
 
-// Get financial summary
+// Get financial summary  
 router.get('/summary', protect, async (req, res) => {
   try {
     // TODO: Implement actual database queries
@@ -19,7 +20,15 @@ router.get('/summary', protect, async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
-
+router.post('/salary-structure', protect, async (req, res) => {
+  try {
+    const { salary, allowances } = req.body;
+    const recommendations = await recommendSalaryStructure(salary, allowances);
+    res.json(recommendations);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 // Get financial projections
 router.get('/projections', protect, async (req, res) => {
   try {

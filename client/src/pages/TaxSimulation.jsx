@@ -11,7 +11,20 @@ const mockData = [
   { month: 'Mar', baseline: 5400, optimized: 4400 },
   { month: 'Apr', baseline: 5600, optimized: 4500 },
 ];
+const handleScenarioAnalysis = async () => {
+  try {
+    const scenarios = [
+      { income: 150000, expenses: 50000, deductions: 20000 },
+      { income: 160000, expenses: 55000, deductions: 22000 },
+      { income: 140000, expenses: 45000, deductions: 18000 }
+    ];
 
+    const results = await api.post('/tax/scenario', { scenarios });
+    setAnalysisResults(results.data);
+  } catch (error) {
+    console.error('Scenario analysis failed:', error);
+  }
+};
 function TaxSimulation() {
   const [income, setIncome] = useState('150000');
   const [expenses, setExpenses] = useState('50000');
